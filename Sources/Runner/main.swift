@@ -18,7 +18,7 @@ private func runCommand(_ command: DangerCommand, logger: Logger) throws {
     }
 }
 
-let cliLength = ProcessInfo.processInfo.arguments.count
+let argumentsCount = CommandLine.arguments.count
 let isVerbose = CommandLine.arguments.contains("--verbose") || (ProcessInfo.processInfo.environment["DEBUG"] != nil)
 let isSilent = CommandLine.arguments.contains("--silent")
 let logger = Logger(isVerbose: isVerbose, isSilent: isSilent)
@@ -29,7 +29,14 @@ guard !CommandLine.arguments.contains("--version") else {
 }
 
 do {
-    if cliLength > 1 {
+    logger.debug(
+        """
+        [main] arguments:
+        \(CommandLine.arguments.enumerated().map { "\t\($0): \($1)" }.joined(separator: "\n"))
+        """
+    )
+
+    if argumentsCount > 1 {
         logger.debug("Launching Danger Swift \(CommandLine.arguments[1]) (v\(DangerVersion))")
 
         let command = DangerCommand(rawValue: CommandLine.arguments[1])

@@ -52,12 +52,12 @@ func runDanger(logger: Logger) throws {
     let importsOnly = try String(contentsOfFile: dangerfilePath)
     let executor = ShellExecutor()
 
-    if let spmDanger = SPMDanger() {
-        spmDanger.buildDependencies(executor: executor)
-        libArgs += ["-L", spmDanger.buildFolder]
-        libArgs += ["-I", spmDanger.buildFolder]
-        libArgs += [spmDanger.swiftcLibImport]
-    } else {
+//    if let spmDanger = SPMDanger() {
+//        spmDanger.buildDependencies(executor: executor)
+//        libArgs += ["-L", spmDanger.buildFolder]
+//        libArgs += ["-I", spmDanger.buildFolder]
+//        libArgs += [spmDanger.swiftcLibImport]
+//    } else {
         guard let libDangerPath = Runtime.getLibDangerPath() else {
             let potentialFolders = Runtime.potentialLibraryFolders
             logger.logError("Could not find a libDanger to link against at any of: \(potentialFolders)",
@@ -106,7 +106,7 @@ func runDanger(logger: Logger) throws {
         }
 
         libArgs += ["-lDanger"] // Eval the code with the Target Danger added
-    }
+//    }
 
     logger.debug("Preparing to compile")
     let tempDangerfilePath = tmpPath + "_tmp_dangerfile.swift"

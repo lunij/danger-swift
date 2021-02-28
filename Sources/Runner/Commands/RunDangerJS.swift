@@ -3,6 +3,8 @@ import Logger
 import RunnerLib
 
 func runDangerJSCommandToRunDangerSwift(_ command: DangerCommand, logger: Logger) throws -> Int32 {
+    logger.debug(#function + "\(command)")
+
     guard let dangerJS = try? getDangerCommandPath(logger: logger) else {
         logger.logError("Danger JS was not found on the system",
                         "Please install it with npm or brew",

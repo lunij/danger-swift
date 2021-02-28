@@ -1,13 +1,11 @@
 import Foundation
+import Logger
 
 #if os(Linux)
     import Glibc
 #else
     import Darwin.C
 #endif
-import Logger
-
-// MARK: - DangerRunner
 
 final class DangerRunner {
     static let shared = DangerRunner()
@@ -22,37 +20,45 @@ final class DangerRunner {
     }
 
     private init() {
-        let isVerbose = CommandLine.arguments.contains("--verbose")
-            || (ProcessInfo.processInfo.environment["DEBUG"] != nil)
+        let isVerbose = CommandLine.arguments.contains("--verbose") || ProcessInfo.processInfo.environment["DEBUG"] != nil
         let isSilent = CommandLine.arguments.contains("--silent")
+
         logger = Logger(isVerbose: isVerbose, isSilent: isSilent)
-        logger.debug("Ran with: \(CommandLine.arguments.joined(separator: " "))")
 
-        let cliLength = CommandLine.arguments.count
+        logger.debug(
+            """
+            \(type(of: self)) arguments:
+            \(CommandLine.arguments.enumerated().map { "\t\($0): \($1)" }.joined(separator: "\n"))
+            """
+        )
 
-        guard cliLength - 2 > 0 else {
+        let argumentsCount = CommandLine.arguments.count
+
+        guard argumentsCount - 2 > 0 else {
             logger.logError("To execute Danger run danger-swift ci, " +
                 "danger-swift pr or danger-swift local on your terminal")
             exit(1)
         }
 
-        let dslJSONArg: String? = CommandLine.arguments[cliLength - 2]
-        let outputJSONPath = CommandLine.arguments[cliLength - 1]
+        let dslJsonArg: String? = CommandLine.arguments[argumentsCount - 2]
+        let outputJSONPath = CommandLine.arguments[argumentsCount - 1]
 
-        guard let dslJSONPath = dslJSONArg else {
+        guard let dslJsonPath = dslJsonArg else {
             logger.logError("could not find DSL JSON arg")
             exit(1)
         }
 
-        guard let dslJSONContents = FileManager.default.contents(atPath: dslJSONPath) else {
-            logger.logError("could not find DSL JSON at path: \(dslJSONPath)")
+        guard let dslJsonData = FileManager.default.contents(atPath: dslJsonPath) else {
+            logger.logError("could not find DSL JSON at path: \(dslJsonPath)")
             exit(1)
         }
         do {
+            logger.debug("Decoding the DSL at \(dslJsonPath)")
+            logger.debug("DSL content:\n\(String(data: dslJsonData, encoding: .utf8)!)")
+
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .custom(DateFormatter.dateFormatterHandler)
-            logger.debug("Decoding the DSL into Swift types")
-            dsl = try decoder.decode(DSL.self, from: dslJSONContents).danger
+            dsl = try decoder.decode(DSL.self, from: dslJsonData).danger
         } catch {
             logger.logError("Failed to parse JSON:", error)
             exit(1)

@@ -1,5 +1,5 @@
-import DangerShellExecutor
 import Foundation
+import ShellRunner
 
 /// The SwiftLint plugin has been embedded inside Danger, making
 /// it usable out of the box.
@@ -21,7 +21,7 @@ public enum SwiftLint {
     }
 
     static let danger = Danger()
-    static let shellExecutor = ShellExecutor()
+    static let shell = ShellRunner()
 
     /// This method is deprecated in favor of
     @available(*, deprecated, message: "Use the lint(_ lintStyle ..) method instead.")
@@ -63,7 +63,7 @@ public enum SwiftLint {
                             swiftlintPath: String? = nil) -> [SwiftLintViolation] {
         lint(lintStyle: lintStyle,
              danger: danger,
-             shellExecutor: shellExecutor,
+             shell: shell,
              swiftlintPath: swiftlintPath ?? SwiftLint.swiftlintDefaultPath(),
              inline: inline,
              configFile: configFile,
@@ -78,7 +78,7 @@ extension SwiftLint {
     static func lint(
         lintStyle: LintStyle = .modifiedAndCreatedFiles(directory: nil),
         danger: DangerDSL,
-        shellExecutor: ShellExecuting,
+        shell: ShellRunnerProtocol,
         swiftlintPath: String,
         inline: Bool = false,
         configFile: String? = nil,
@@ -114,7 +114,7 @@ extension SwiftLint {
             // Allow folks to lint all the potential files
             violations = lintAll(directory: directory,
                                  arguments: arguments,
-                                 shellExecutor: shellExecutor,
+                                 shell: shell,
                                  swiftlintPath: swiftlintPath,
                                  outputFilePath: outputFilePath,
                                  failAction: failAction,
@@ -129,7 +129,7 @@ extension SwiftLint {
             violations = lintFiles(files,
                                    danger: danger,
                                    arguments: arguments,
-                                   shellExecutor: shellExecutor,
+                                   shell: shell,
                                    swiftlintPath: swiftlintPath,
                                    outputFilePath: outputFilePath,
                                    failAction: failAction,
@@ -139,7 +139,7 @@ extension SwiftLint {
             violations = lintFiles(files,
                                    danger: danger,
                                    arguments: arguments,
-                                   shellExecutor: shellExecutor,
+                                   shell: shell,
                                    swiftlintPath: swiftlintPath,
                                    outputFilePath: outputFilePath,
                                    failAction: failAction,
@@ -163,7 +163,7 @@ extension SwiftLint {
     // swiftlint:disable:next function_parameter_count
     private static func lintAll(directory: String?,
                                 arguments: [String],
-                                shellExecutor: ShellExecuting,
+                                shell: ShellRunnerProtocol,
                                 swiftlintPath: String,
                                 outputFilePath: String,
                                 failAction: (String) -> Void,
@@ -178,7 +178,7 @@ extension SwiftLint {
                                    arguments: arguments,
                                    environmentVariables: [:],
                                    outputFilePath: outputFilePath,
-                                   shellExecutor: shellExecutor,
+                                   shell: shell,
                                    failAction: failAction,
                                    readFile: readFile)
     }
@@ -187,7 +187,7 @@ extension SwiftLint {
     private static func lintFiles(_ files: [File],
                                   danger _: DangerDSL,
                                   arguments: [String],
-                                  shellExecutor: ShellExecuting,
+                                  shell: ShellRunnerProtocol,
                                   swiftlintPath: String,
                                   outputFilePath: String,
                                   failAction: (String) -> Void,
@@ -213,7 +213,7 @@ extension SwiftLint {
                                    arguments: arguments,
                                    environmentVariables: inputFiles,
                                    outputFilePath: outputFilePath,
-                                   shellExecutor: shellExecutor,
+                                   shell: shell,
                                    failAction: failAction,
                                    readFile: readFile)
     }
@@ -260,10 +260,10 @@ extension SwiftLint {
                                             arguments: [String],
                                             environmentVariables: [String: String],
                                             outputFilePath: String,
-                                            shellExecutor: ShellExecuting,
+                                            shell: ShellRunnerProtocol,
                                             failAction: (String) -> Void,
                                             readFile: (String) -> String) -> [SwiftLintViolation] {
-        shellExecutor.execute(swiftlintPath,
+        shell.execute(swiftlintPath,
                               arguments: arguments,
                               environmentVariables: environmentVariables,
                               outputFile: outputFilePath)
